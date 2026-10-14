@@ -1,0 +1,9 @@
+GITHUB PAGES — IMPORTANT
+1. Open your repository https://github.com/Pramaynik/Pramay
+2. Add file > Upload files. Upload index.html and all FOUR .glb files from this folder.
+3. If GitHub says a file already exists, drag the replacement in and commit changes.
+4. Commit changes at bottom.
+5. Settings > Pages > Source: Deploy from a branch > Branch: main > Folder: /(root) > Save.
+6. Wait a few minutes, then open https://pramaynik.github.io/Pramay/
+7. Use Ctrl+F5 to refresh if an older version remains cached.
+The ZIP itself is not the published website; upload the individual files.
