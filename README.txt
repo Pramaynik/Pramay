@@ -1,7 +1,7 @@
-AutoAR Studio V23 — Simulation Fix
+AutoAR Studio V30 — Engine, Chassis & Service Bay
 
-Root cause fixed: V22 contained two separate road-test/reaction-test implementations. A global flag set by the lower script caused the upgraded simulation to exit before initialization, while the obsolete simulation then attached competing controls and did not drive the live sensor dashboard. V23 removes the obsolete duplicate loop and lets the upgraded simulation initialize after DOMContentLoaded.
+Install: upload index.html and all included .glb files to the root of your existing GitHub Pages repository. Keep filenames unchanged.
 
-Deploy: upload index.html and all .glb files to the root of your existing GitHub Pages repository, commit, wait for deployment, then hard refresh (Ctrl+Shift+R).
+New: Engine & Service Bay tab (13) with animated inline-4 cutaway, illustrative injector pulse, oil/fuel/coolant flow visualization, engine RPM/load controls, chassis component fitting sequence, service checklists, and front/rear camera source selector.
 
-The ABS/sensors are educational software estimates, not physical ECU readings or a validated vehicle model.
+Notes: Values and animations are educational simulations, not live ECU readings or OEM-specific service specifications. Use the exact vehicle workshop manual and approved procedures for real work. Camera access requires HTTPS or localhost and browser permission. External Three.js/model-viewer libraries require internet access.
