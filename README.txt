@@ -1,20 +1,7 @@
-AUTOAR STUDIO — REALISTIC GARAGE PROTOTYPE
+AutoAR Studio V23 — Simulation Fix
 
-FILES
-- index.html: website interface and interactive browser controls
-- mclaren_765lt.glb: bundled 3D exterior model
+Root cause fixed: V22 contained two separate road-test/reaction-test implementations. A global flag set by the lower script caused the upgraded simulation to exit before initialization, while the obsolete simulation then attached competing controls and did not drive the live sensor dashboard. V23 removes the obsolete duplicate loop and lets the upgraded simulation initialize after DOMContentLoaded.
 
-LOCAL TEST
-1. Keep both files in the same folder.
-2. Open index.html in a browser with internet access (the model-viewer library loads from Google's CDN).
-3. For best compatibility, use a simple local web server or publish to GitHub Pages over HTTPS.
+Deploy: upload index.html and all .glb files to the root of your existing GitHub Pages repository, commit, wait for deployment, then hard refresh (Ctrl+Shift+R).
 
-GITHUB PAGES
-Upload index.html and mclaren_765lt.glb into the repository root and commit changes. Wait for GitHub Pages to publish, then hard-refresh the page.
-
-HONEST LIMITATIONS
-- The GLB is a real 3D exterior asset, not a complete rigged CAD assembly.
-- The colour, wheel, light and hazard controls are concept/UI controls; actual model materials and lamp meshes may not be independently editable in this asset.
-- Engine audio is a synthesized tone, not a recorded engine sound.
-- Engine-cycle explanations and braking estimates are educational; no validated vehicle dynamics, crash physics or engineering CAD geometry is provided.
-- AR availability depends on browser/device and model compatibility.
+The ABS/sensors are educational software estimates, not physical ECU readings or a validated vehicle model.
