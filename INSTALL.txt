@@ -7,3 +7,6 @@ Preserves previous customizer, engine sound/voice/MCQs, suspension bay, all-part
 Install: back up root index.html, replace with this file, commit to main, wait for Pages deployment, hard refresh. This package does not deploy itself.
 
 Limitations: EV/hybrid flows and power numbers are educational illustrations, not a vehicle-specific simulation. Real hybrid architectures differ (series, parallel, power-split). Regeneration depends on battery limits, grip, speed and control calibration. High-voltage EV work requires qualified training and isolation. Full 3D part motion requires separate rigged meshes. Syntax checks do not establish full browser correctness.
+
+
+V8 additions: prominent AR launch buttons, synthesized sound effects for intake/turbo/gearbox/brakes/suspension/exhaust, and a road-test simulator with throttle/brake/steering/grip controls, telemetry, estimated stopping distance, and a reaction-time challenge. The road and audio are illustrative browser simulations; they are not real vehicle tests or recorded McLaren sounds.
