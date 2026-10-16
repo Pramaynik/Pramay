@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080d13">
-<title>AutoAR Studio V32 | Interactive Customizer</title>
+<title>AutoAR Studio V35 | 765LT Parts & Alfa Romeo 4C</title>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js"}}</script>
 <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 <script>
@@ -196,7 +196,7 @@ const oldSound=document.getElementById('sound'); if(oldSound){oldSound.addEventL
 <main class="wrap">
 <section class="hero"><div><div class="eyebrow">Explore · Configure · Simulate · Learn</div><h1>Beyond the bodywork.</h1><p>Explore the existing McLaren model, configure a conceptual vehicle architecture, inspect a live mechanical animation, and run illustrative vehicle-dynamics experiments.</p></div><div class="controls" style="padding-left:0"><button class="primary" id="intro">▶ Hear lab introduction</button><button class="primary" id="heroAR">📱 Launch AR</button><button id="heroRoad">🏁 Test on road</button></div></section>
 <nav class="tabs" aria-label="Engineering lab sections">
-<button class="active" data-page="garage">01 · 3D Garage</button><button data-page="builder">02 · Build a Car</button><button data-page="engine">03 · Engine Lab</button><button data-page="physics">04 · Vehicle Physics</button><button data-page="learn">05 · Learn & AR</button><button data-page="parts">06 · All Parts & Motion</button><button data-page="electronics">07 · Sensors / ABS / BMS</button><button data-page="evlab">08 · Electric & Hybrid</button><button data-page="roadtest">09 · Road Test</button><button data-page="arroad">10 · AR Road Test</button><button data-page="eyedrive">11 · Eye-Motion Drive</button><button data-page="engineering">12 · Battery & Steering Geometry</button><button data-page="servicebay">13 · Engine & Service Bay</button><button data-page="customizer">14 · Ultimate Customizer</button>
+<button class="active" data-page="garage">01 · 3D Garage</button><button data-page="builder">02 · Build a Car</button><button data-page="engine">03 · Engine Lab</button><button data-page="physics">04 · Vehicle Physics</button><button data-page="learn">05 · Learn & AR</button><button data-page="parts">06 · All Parts & Motion</button><button data-page="electronics">07 · Sensors / ABS / BMS</button><button data-page="evlab">08 · Electric & Hybrid</button><button data-page="roadtest">09 · Road Test</button><button data-page="arroad">10 · AR Road Test</button><button data-page="eyedrive">11 · Eye-Motion Drive</button><button data-page="engineering">12 · Battery & Steering Geometry</button><button data-page="servicebay">13 · Engine & Service Bay</button><button data-page="customizer">14 · Ultimate Customizer</button><button data-page="alfa4c">15 · 765LT Parts / Alfa 4C</button>
 </nav>
 <section class="page active" id="garage"><div class="grid">
 <div class="panel"><div class="panelhead"><h2>McLaren · 3D showroom</h2><span class="status" id="modelStatus">Loading model</span></div><div class="viewer"><model-viewer id="car" src="./mclaren_spider.glb" alt="3D McLaren supercar" camera-controls auto-rotate shadow-intensity="1.1" exposure="1" environment-image="neutral" ar ar-placement="floor" ar-scale="auto" ar-modes="scene-viewer webxr quick-look" loading="eager"><button slot="ar-button" class="primary" style="position:absolute;right:14px;bottom:14px">View in your space ↗</button></model-viewer><div class="hint" id="modelHint">Drag to orbit · Scroll or pinch to zoom · Use AR on a supported phone</div></div><div class="controls"><button id="resetView">Reset camera</button><button id="rotate" class="active">Auto rotate: on</button><button id="tryAR" class="primary">Try AR ↗</button><button id="headlights">Headlights: off</button><button id="hazards">Hazards: off</button></div><div class="content"><div class="field"><label for="garageModelSelect">Vehicle model</label><select id="garageModelSelect"><option value="./mclaren_spider.glb">McLaren Spider</option><option value="./2022_mclaren_765lt.glb">McLaren 765LT</option><option value="./mclaren_720s_lbwk_unfinished.glb">McLaren 720S LBWK (unfinished model)</option><option value="./mc_laren.glb">McLaren concept model</option><option value="./alfa_romeo_giulia_concept.glb">Alfa Romeo Giulia-inspired concept</option></select></div><p class="small">Switch between the distinct vehicle files included in this project. The 720S asset is marked unfinished; the other McLaren files are existing supplied models, not newly sourced official models.</p></div></div>
@@ -1150,6 +1150,181 @@ updateBuild();updatePhysics();updateSuspensionMetrics();drawSuspension();request
  const chassis=$('chassisCanvas');
  if(chassis&&'ResizeObserver'in window){new ResizeObserver(()=>{if(chassis.clientWidth>0&&chassis.clientHeight>0){try{window.dispatchEvent(new Event('resize'));}catch(e){}}}).observe(chassis)}
  document.querySelector('[data-page="builder"]')?.addEventListener('click',()=>requestAnimationFrame(()=>requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')))));
+})();
+</script>
+
+
+<section class="page" id="alfa4c">
+ <div class="panel">
+  <div class="panelhead"><h2>765LT Parts Audit · Alfa Romeo 4C Workshop</h2><span class="status" id="partsLabStatus">Preparing 3D workshop</span></div>
+  <div class="content">
+   <p class="small">The McLaren 765LT GLB is the primary customizer model. Its imported body geometry does not expose named door/hood/boot meshes, so the controls below report what is actually available rather than faking a hinge. Your uploaded 2018 Alfa Romeo 4C FBX has separately named door, hood, boot, wheel and headlight objects, so this workshop loads it as a part-level demonstration.</p>
+   <div class="two">
+    <div class="field"><label for="partsVehicleSelect">Workshop vehicle</label><select id="partsVehicleSelect"><option value="alfa">2018 Alfa Romeo 4C (part-level FBX)</option><option value="mclaren">McLaren 765LT (GLB audit)</option></select></div>
+    <div class="field"><label for="partsPaint">Body colour (preview)</label><input type="color" id="partsPaint" value="#c81e32"></div>
+   </div>
+   <div id="alfaViewerWrap" style="position:relative;background:#080d13;border:1px solid #243445;border-radius:14px;overflow:hidden;min-height:380px">
+    <canvas id="alfaPartsCanvas" style="width:100%;height:460px;display:block;touch-action:none"></canvas>
+    <div id="alfaLoadOverlay" style="position:absolute;inset:12px auto auto 12px;padding:8px 12px;border-radius:8px;background:#101a26e8;color:#fff;font-size:12px">Loading Alfa Romeo 4C model…</div>
+   </div>
+   <div class="controls" style="padding-left:0;margin-top:12px">
+    <button id="partDoorLeft" type="button">Open left door</button>
+    <button id="partDoorRight" type="button">Open right door</button>
+    <button id="partHood" type="button">Open hood</button>
+    <button id="partBoot" type="button">Open boot</button>
+    <button id="partWheels" type="button">Spin wheels</button>
+    <button id="partLights" type="button">Headlights: off</button>
+    <button id="partReset" type="button">Reset parts</button>
+   </div>
+   <div class="two" style="margin-top:12px">
+    <div class="panel" style="margin:0"><div class="panelhead"><h3>Part status</h3></div><div class="content"><div id="partStatusList" class="small">Waiting for model…</div></div></div>
+    <div class="panel" style="margin:0"><div class="panelhead"><h3>765LT mesh audit</h3></div><div class="content"><div id="mclarenAudit" class="small">Inspecting supplied McLaren GLB…</div><p class="small">This audit checks the actual GLB node names. Door animation requires separate door geometry and a hinge pivot; a single continuous body shell cannot be opened reliably by a button alone.</p></div></div>
+   </div>
+   <p class="small" style="margin-top:12px">Drag to orbit, scroll/pinch to zoom. Door/hood/boot motion is applied only when the imported model exposes a matching separate object. The supplied Alfa FBX is user-provided; the McLaren GLB remains the primary vehicle for the main customizer.</p>
+  </div>
+ </div>
+</section>
+
+
+<script type="module">
+import * as THREE from 'three';
+import { FBXLoader } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/loaders/FBXLoader.js';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/controls/OrbitControls.js';
+(()=>{
+ const $=id=>document.getElementById(id);
+ const canvas=$('alfaPartsCanvas'); if(!canvas)return;
+ const status=$('partsLabStatus'),overlay=$('alfaLoadOverlay'),statusList=$('partStatusList'),audit=$('mclarenAudit');
+ const scene=new THREE.Scene(); scene.background=new THREE.Color(0x080d13);
+ const camera=new THREE.PerspectiveCamera(42,1,.01,100000); camera.position.set(4,2.8,5);
+ const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
+ renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.75)); renderer.outputColorSpace=THREE.SRGBColorSpace;
+ renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.1;
+ scene.add(new THREE.HemisphereLight(0xd9e8ff,0x18212b,2.0));
+ const key=new THREE.DirectionalLight(0xffffff,3.0);key.position.set(4,8,5);scene.add(key);
+ const rim=new THREE.DirectionalLight(0x76baff,1.5);rim.position.set(-5,3,-4);scene.add(rim);
+ const grid=new THREE.GridHelper(12,24,0x2a4052,0x172431);grid.position.y=-.02;scene.add(grid);
+ const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.07;controls.target.set(0,.8,0);
+ let root=null, modelKind='alfa', parts={}, openState={left:false,right:false,hood:false,boot:false}, wheelSpin=false, lightsOn=false, wheelNodes=[];
+ const originalMaterials=new Map();
+ const partSpecs=[
+  ['left','partDoorLeft',/DOOR_LEFT/i,'Left door'],
+  ['right','partDoorRight',/DOOR_RIGHT/i,'Right door'],
+  ['hood','partHood',/HOOD/i,'Hood'],
+  ['boot','partBoot',/BOOT/i,'Boot'],
+ ];
+ function resize(){
+  const w=Math.max(1,canvas.clientWidth),h=Math.max(1,canvas.clientHeight);
+  renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();
+ }
+ new ResizeObserver(resize).observe(canvas); window.addEventListener('resize',resize); resize();
+ function clearModel(){if(root){scene.remove(root);root.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){for(const m of (Array.isArray(o.material)?o.material:[o.material])){if(m.map)m.map.dispose();m.dispose?.()}}})}root=null;parts={};wheelNodes=[];openState={left:false,right:false,hood:false,boot:false};}
+ function centerFit(obj){
+  const box=new THREE.Box3().setFromObject(obj);const size=box.getSize(new THREE.Vector3());const center=box.getCenter(new THREE.Vector3());
+  obj.position.sub(center);
+  const max=Math.max(size.x,size.y,size.z)||1;
+  const scale=3.8/max;obj.scale.setScalar(scale);
+  const b=new THREE.Box3().setFromObject(obj);const sz=b.getSize(new THREE.Vector3());
+  camera.position.set(sz.x*1.45,sz.y*1.0,sz.z*1.8);
+  controls.target.set(0,sz.y*.12,0);camera.near=Math.max(.001,max*scale/1000);camera.far=max*scale*100;camera.updateProjectionMatrix();controls.update();
+ }
+ function findParts(obj){
+  const all=[];obj.traverse(o=>{if(o.isMesh){all.push(o);const n=(o.name||'').toLowerCase();if(/wheel|tyre|tire|rim/.test(n))wheelNodes.push(o)}});
+  const patterns={left:/DOOR_LEFT/i,right:/DOOR_RIGHT/i,hood:/HOOD/i,boot:/BOOT/i,lights:/HEADLIGHT|LIGHTS/i};
+  for(const [key,pattern] of Object.entries(patterns)){
+   const matches=[];obj.traverse(o=>{if(o!==obj&&pattern.test(o.name||'')&&(o.isMesh||o.children.length))matches.push(o)});
+   // Keep the highest matching nodes, avoiding duplicate descendants.
+   parts[key]=matches.filter(n=>!matches.some(p=>p!==n&&p.children.includes(n)));
+  }
+  return all.length;
+ }
+ function makePivotForPart(key,angle){
+  const nodes=parts[key]||[];if(!nodes.length)return false;
+  // Group matched geometry under a pivot located at a plausible hinge edge; preserve its world transform.
+  const box=new THREE.Box3();nodes.forEach(n=>box.union(new THREE.Box3().setFromObject(n)));
+  if(box.isEmpty())return false;
+  const size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());
+  const fullBox=new THREE.Box3().setFromObject(root),fullSize=fullBox.getSize(new THREE.Vector3());
+  const longitudinalX=fullSize.x>=fullSize.z;
+  let hinge=new THREE.Vector3(center.x,box.min.y,center.z);
+  if(key==='left'||key==='right'){
+   hinge.y=box.min.y+size.y*.35;
+   if(longitudinalX){hinge.z=key==='left'?box.min.z:box.max.z;hinge.x=box.min.x+size.x*.12}
+   else {hinge.x=key==='left'?box.min.x:box.max.x;hinge.z=box.min.z+size.z*.12}
+  } else if(key==='hood'){
+   hinge.y=box.min.y+size.y*.5;
+   if(longitudinalX)hinge.x=box.max.x;else hinge.z=box.max.z;
+  } else if(key==='boot'){
+   hinge.y=box.min.y+size.y*.5;
+   if(longitudinalX)hinge.x=box.min.x;else hinge.z=box.min.z;
+  }
+  const pivot=new THREE.Group();pivot.name='AutoAR_'+key+'_hinge';scene.updateMatrixWorld(true);pivot.position.copy(hinge);scene.add(pivot);
+  nodes.forEach(n=>pivot.attach(n));
+  // Store pivot and desired angle; use the axis perpendicular to the car's longitudinal direction for hood/boot.
+  const axis=(key==='left'||key==='right')?'y':(longitudinalX?'z':'x');
+  const sign=(key==='left'||key==='hood')?1:-1;
+  const record={pivot,nodes,axis,sign,angle,base:0};
+  parts[key+'_pivot']=record;
+  return true;
+ }
+ function setPart(key,open){
+  if(!parts[key]||!parts[key].length){toastStatus(`${key} mesh not found in this model. The source needs a separate named mesh.`);return}
+  let rec=parts[key+'_pivot'];
+  if(!rec){if(!makePivotForPart(key,key==='left'||key==='right'?Math.PI/2:.75)){toastStatus('Could not create a pivot for this part.');return}rec=parts[key+'_pivot']}
+  openState[key]=open;
+  const target=open?rec.angle*rec.sign:0;
+  rec.pivot.rotation[rec.axis]=target;
+  const label={left:'Left door',right:'Right door',hood:'Hood',boot:'Boot'}[key];
+  $(({left:'partDoorLeft',right:'partDoorRight',hood:'partHood',boot:'partBoot'})[key]).textContent=(open?'Close ':'Open ')+label.toLowerCase();
+  renderPartStatus();
+ }
+ function toastStatus(s){statusList.textContent=s;status.textContent='Action needs attention'}
+ function renderPartStatus(){
+  statusList.innerHTML=['left','right','hood','boot'].map(k=>{
+   const name={left:'Left door',right:'Right door',hood:'Hood',boot:'Boot'}[k];
+   return `<div style="display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px solid #263646"><span>${name}</span><b>${parts[k]?.length?(openState[k]?'OPEN':'CLOSED'):'mesh unavailable'}</b></div>`;
+  }).join('')+`<div style="padding-top:8px">Wheel meshes: <b>${wheelNodes.length}</b> · Headlight/light meshes: <b>${parts.lights?.length||0}</b></div>`;
+ }
+ function loadAlfa(){
+  clearModel();modelKind='alfa';overlay.textContent='Loading user-supplied Alfa Romeo 4C FBX…';overlay.style.display='block';status.textContent='Loading Alfa Romeo 4C';
+  const loader=new FBXLoader();loader.setResourcePath('./alfa4c/');
+  loader.load('./alfa4c/FINAL_MODEL_4c18.fbx',obj=>{
+   root=obj;root.name='AlfaRomeo4C';scene.add(root);
+   const count=findParts(root);centerFit(root);resize();
+   overlay.style.display='none';status.textContent=`Alfa 4C ready · ${count} meshes`;
+   renderPartStatus();
+  },evt=>{if(evt.total)overlay.textContent=`Loading Alfa model ${Math.round(evt.loaded/evt.total*100)}%…`},err=>{
+   console.error('Alfa FBX load failed',err);overlay.textContent='Alfa model failed to load. Confirm the alfa4c folder and textures were uploaded with index.html.';status.textContent='Model load failed';statusList.textContent='Check the browser console and ensure the full alfa4c folder is deployed.';
+  });
+ }
+ async function auditMcLaren(){
+  try{
+   const r=await fetch('./2022_mclaren_765lt.glb');if(!r.ok)throw Error('GLB request failed');
+   const b=await r.arrayBuffer();const dv=new DataView(b);let off=12,j=null;
+   while(off<dv.byteLength){const len=dv.getUint32(off,true),type=dv.getUint32(off+4,true);off+=8;if(type===0x4E4F534A){j=JSON.parse(new TextDecoder().decode(new Uint8Array(b,off,len)).replace(/\0+$/,''));break}off+=len}
+   const names=(j?.nodes||[]).map(n=>n.name||'');
+   const groups={doors:names.filter(n=>/door/i.test(n)),hood:names.filter(n=>/hood|bonnet/i.test(n)),boot:names.filter(n=>/boot|trunk/i.test(n)),wheels:names.filter(n=>/wheel/i.test(n)),lights:names.filter(n=>/light|lamp/i.test(n))};
+   audit.innerHTML=`<div>Nodes inspected: <b>${names.length}</b></div>`+Object.entries(groups).map(([k,a])=>`<div style="padding:4px 0">${k[0].toUpperCase()+k.slice(1)}: <b>${a.length? a.length+' named nodes':'no semantically named nodes found'}</b></div>`).join('')+`<p>Paint nodes: <b>${names.filter(n=>/paint/i.test(n)).length}</b></p>`;
+  }catch(e){audit.textContent='Could not inspect the 765LT GLB in this browser. Confirm 2022_mclaren_765lt.glb is deployed beside index.html.'}
+ }
+ $('partsVehicleSelect').addEventListener('change',()=>{
+  const isAlfa=$('partsVehicleSelect').value==='alfa';
+  $('alfaViewerWrap').style.display=isAlfa?'block':'none';
+  document.querySelectorAll('#alfa4c .controls button').forEach(b=>b.disabled=!isAlfa);
+  if(isAlfa){if(!root||modelKind!=='alfa')loadAlfa();status.textContent='Alfa Romeo 4C workshop'}
+  else {clearModel();modelKind='mclaren';overlay.style.display='none';status.textContent='McLaren 765LT mesh audit';statusList.textContent='The current 765LT asset has no nodes named door, hood/bonnet or boot/trunk. These moving panels require a source model with separated parts or custom mesh authoring. The wheels/materials can still be inspected in the main customizer.'}
+ });
+ $('partDoorLeft').addEventListener('click',()=>setPart('left',!openState.left));
+ $('partDoorRight').addEventListener('click',()=>setPart('right',!openState.right));
+ $('partHood').addEventListener('click',()=>setPart('hood',!openState.hood));
+ $('partBoot').addEventListener('click',()=>setPart('boot',!openState.boot));
+ $('partWheels').addEventListener('click',()=>{wheelSpin=!wheelSpin;$('partWheels').textContent=wheelSpin?'Stop wheel spin':'Spin wheels';});
+ $('partLights').addEventListener('click',()=>{lightsOn=!lightsOn;$('partLights').textContent='Headlights: '+(lightsOn?'on':'off');(parts.lights||[]).forEach(o=>o.traverse(n=>{if(n.isMesh){if(!originalMaterials.has(n))originalMaterials.set(n,n.material);const mats=Array.isArray(n.material)?n.material:[n.material];mats.forEach(m=>{if(m.emissive)m.emissive.set(lightsOn?0xffffff:0x000000);if(m.emissiveIntensity!==undefined)m.emissiveIntensity=lightsOn?1.5:0})}}));});
+ $('partReset').addEventListener('click',()=>{for(const k of ['left','right','hood','boot'])if(parts[k]?.length)setPart(k,false);wheelSpin=false;lightsOn=false;$('partWheels').textContent='Spin wheels';$('partLights').textContent='Headlights: off';});
+ $('partsPaint').addEventListener('input',()=>{if(!root)return;const c=new THREE.Color($('partsPaint').value);let count=0;root.traverse(o=>{if(o.isMesh){const mats=Array.isArray(o.material)?o.material:[o.material];mats.forEach(m=>{const n=(m.name+' '+o.name).toLowerCase();if(/ext_alfa_red|body|paint|ext/i.test(n)&&m.color){m.color.copy(c);count++}})}});status.textContent=count?`Paint applied to ${count} exterior material(s)`:'Colour selected; no exterior material matched automatically';});
+ $('partsVehicleSelect').value='alfa';loadAlfa();auditMcLaren();
+ function animate(){requestAnimationFrame(animate);if(wheelSpin&&modelKind==='alfa')wheelNodes.forEach((n,i)=>{n.rotation.x+=.07});controls.update();renderer.render(scene,camera)}
+ animate();
+ document.querySelector('[data-page="alfa4c"]')?.addEventListener('click',()=>{setTimeout(resize,80);setTimeout(resize,300)});
 })();
 </script>
 
