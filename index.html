@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080d13">
-<title>AutoAR Studio V30 | Engine, Chassis & Service Bay</title>
+<title>AutoAR Studio V32 | Interactive Customizer</title>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js"}}</script>
 <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 <script>
@@ -160,6 +160,9 @@ const oldSound=document.getElementById('sound'); if(oldSound){oldSound.addEventL
 
 #roadCanvas{display:none}#horizonViewport{position:absolute;inset:0;background:linear-gradient(#91b5d0 0%,#d7c6a3 43%,#566b49 44%,#17221b 100%);overflow:hidden}#horizonViewport canvas{display:block;width:100%;height:100%;outline:none}.horizon-hud{position:absolute;left:14px;right:14px;top:12px;display:flex;justify-content:space-between;align-items:center;gap:8px;pointer-events:none;font:800 12px/1.2 ui-monospace,Consolas,monospace;color:#eaf7ff;text-shadow:0 2px 6px #000;letter-spacing:.08em}.horizon-hud span{padding:8px 10px;border:1px solid #ffffff55;border-radius:8px;background:#07111bc9;backdrop-filter:blur(8px)}#horizonSpeed{font-size:19px;color:#d7ff55}.horizon-crosshair{position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);font:20px monospace;color:#ffffff65;pointer-events:none}#horizonLoading{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;background:#07111bdc;color:#d7ff55;border:1px solid #ffffff35;border-radius:10px;padding:12px 16px;font:800 12px system-ui;letter-spacing:.12em;white-space:nowrap}#cameraMode{min-width:150px}.roadstage{height:clamp(440px,55vw,650px)}.panel:fullscreen .roadstage{height:calc(100vh - 260px);min-height:380px}@media(max-width:650px){.roadstage{height:340px}.horizon-hud{left:7px;right:7px;top:7px}.horizon-hud span{padding:6px;font-size:10px}#horizonSpeed{font-size:14px}}
 
+
+.customizer-layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(300px,.8fr);gap:16px}.customizer-preview{height:clamp(360px,45vw,590px);position:relative}.customizer-preview model-viewer{width:100%;height:100%}.design-canvas{display:block;width:100%;height:190px;border:1px solid var(--line);border-radius:12px;background:#0a1119}.wrap-label{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.part-state{padding:10px;border:1px solid var(--line);border-radius:10px;background:#0a1119}.part-state b{display:block}.part-state span{color:var(--muted);font-size:12px}.customizer-swatches{display:flex;gap:8px;flex-wrap:wrap}.customizer-swatches button{min-width:38px;height:38px;border-radius:50%;padding:0;border:2px solid #ffffff66}.customizer-swatches button.selected{outline:2px solid var(--lime);outline-offset:2px}@media(max-width:850px){.customizer-layout{grid-template-columns:1fr}.customizer-preview{height:360px}}
+
 </style>
 <style>
 #arCameraModal{position:fixed;inset:0;z-index:10000;display:none;background:#05090eef;backdrop-filter:blur(10px);padding:18px;overflow:auto}
@@ -174,16 +177,29 @@ const oldSound=document.getElementById('sound'); if(oldSound){oldSound.addEventL
 #roadVehicle{min-width:210px}
 @media(max-width:700px){.ar-camera-stage{height:58vh;min-height:280px}.ar-camera-head{align-items:flex-start}}
 </style>
+<style>
+/* V33: visible build preview and camera-based AR test fallback */
+#builderCarPreview { display:block; width:100%; height:340px; background:#080d13; border-radius:12px; }
+#autoarCameraModal { position:fixed; inset:0; z-index:99999; display:none; background:#05080d; color:#fff; }
+#autoarCameraModal.open { display:block; }
+#autoarCameraModal .arbar { position:absolute; z-index:3; top:12px; left:12px; right:12px; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+#autoarCameraModal .arbar button { padding:10px 14px; border-radius:10px; border:1px solid #ffffff40; background:#111c28; color:#fff; font-weight:700; }
+#autoarCameraModal video { width:100%; height:100%; object-fit:cover; }
+#autoarCameraModal model-viewer { position:absolute; inset:10% 5% 5%; width:90%; height:85%; background:transparent; --poster-color:transparent; }
+#autoarCameraModal .arhelp { position:absolute; z-index:3; left:12px; right:12px; bottom:14px; padding:12px; background:#07111ddd; border:1px solid #ffffff24; border-radius:12px; font-size:13px; }
+#autoarCameraModal .arhelp button { margin-top:8px; }
+@media(max-width:700px){#builderCarPreview{height:260px} #autoarCameraModal model-viewer{inset:16% 0 12%;width:100%;height:72%}}
+</style>
 </head>
 <body>
 <header><div><div class="brand">AUTO<span>AR</span> STUDIO</div><div class="eyebrow">Supercar engineering environment</div></div><span class="status" id="globalStatus">Interactive prototype</span></header>
 <main class="wrap">
 <section class="hero"><div><div class="eyebrow">Explore · Configure · Simulate · Learn</div><h1>Beyond the bodywork.</h1><p>Explore the existing McLaren model, configure a conceptual vehicle architecture, inspect a live mechanical animation, and run illustrative vehicle-dynamics experiments.</p></div><div class="controls" style="padding-left:0"><button class="primary" id="intro">▶ Hear lab introduction</button><button class="primary" id="heroAR">📱 Launch AR</button><button id="heroRoad">🏁 Test on road</button></div></section>
 <nav class="tabs" aria-label="Engineering lab sections">
-<button class="active" data-page="garage">01 · 3D Garage</button><button data-page="builder">02 · Build a Car</button><button data-page="engine">03 · Engine Lab</button><button data-page="physics">04 · Vehicle Physics</button><button data-page="learn">05 · Learn & AR</button><button data-page="parts">06 · All Parts & Motion</button><button data-page="electronics">07 · Sensors / ABS / BMS</button><button data-page="evlab">08 · Electric & Hybrid</button><button data-page="roadtest">09 · Road Test</button><button data-page="arroad">10 · AR Road Test</button><button data-page="eyedrive">11 · Eye-Motion Drive</button><button data-page="engineering">12 · Battery & Steering Geometry</button><button data-page="servicebay">13 · Engine & Service Bay</button>
+<button class="active" data-page="garage">01 · 3D Garage</button><button data-page="builder">02 · Build a Car</button><button data-page="engine">03 · Engine Lab</button><button data-page="physics">04 · Vehicle Physics</button><button data-page="learn">05 · Learn & AR</button><button data-page="parts">06 · All Parts & Motion</button><button data-page="electronics">07 · Sensors / ABS / BMS</button><button data-page="evlab">08 · Electric & Hybrid</button><button data-page="roadtest">09 · Road Test</button><button data-page="arroad">10 · AR Road Test</button><button data-page="eyedrive">11 · Eye-Motion Drive</button><button data-page="engineering">12 · Battery & Steering Geometry</button><button data-page="servicebay">13 · Engine & Service Bay</button><button data-page="customizer">14 · Ultimate Customizer</button>
 </nav>
 <section class="page active" id="garage"><div class="grid">
-<div class="panel"><div class="panelhead"><h2>McLaren · 3D showroom</h2><span class="status" id="modelStatus">Loading model</span></div><div class="viewer"><model-viewer id="car" src="./mclaren_spider.glb" alt="3D McLaren supercar" camera-controls auto-rotate shadow-intensity="1.1" exposure="1" environment-image="neutral" ar ar-placement="floor" ar-scale="auto" ar-modes="scene-viewer webxr quick-look" loading="eager"><button slot="ar-button" class="primary" style="position:absolute;right:14px;bottom:14px">View in your space ↗</button></model-viewer><div class="hint" id="modelHint">Drag to orbit · Scroll or pinch to zoom · Use AR on a supported phone</div></div><div class="controls"><button id="resetView">Reset camera</button><button id="rotate" class="active">Auto rotate: on</button><button id="tryAR" class="primary">Try AR ↗</button><button id="headlights">Headlights: off</button><button id="hazards">Hazards: off</button></div></div>
+<div class="panel"><div class="panelhead"><h2>McLaren · 3D showroom</h2><span class="status" id="modelStatus">Loading model</span></div><div class="viewer"><model-viewer id="car" src="./mclaren_spider.glb" alt="3D McLaren supercar" camera-controls auto-rotate shadow-intensity="1.1" exposure="1" environment-image="neutral" ar ar-placement="floor" ar-scale="auto" ar-modes="scene-viewer webxr quick-look" loading="eager"><button slot="ar-button" class="primary" style="position:absolute;right:14px;bottom:14px">View in your space ↗</button></model-viewer><div class="hint" id="modelHint">Drag to orbit · Scroll or pinch to zoom · Use AR on a supported phone</div></div><div class="controls"><button id="resetView">Reset camera</button><button id="rotate" class="active">Auto rotate: on</button><button id="tryAR" class="primary">Try AR ↗</button><button id="headlights">Headlights: off</button><button id="hazards">Hazards: off</button></div><div class="content"><div class="field"><label for="garageModelSelect">Vehicle model</label><select id="garageModelSelect"><option value="./mclaren_spider.glb">McLaren Spider</option><option value="./2022_mclaren_765lt.glb">McLaren 765LT</option><option value="./mclaren_720s_lbwk_unfinished.glb">McLaren 720S LBWK (unfinished model)</option><option value="./mc_laren.glb">McLaren concept model</option><option value="./alfa_romeo_giulia_concept.glb">Alfa Romeo Giulia-inspired concept</option></select></div><p class="small">Switch between the distinct vehicle files included in this project. The 720S asset is marked unfinished; the other McLaren files are existing supplied models, not newly sourced official models.</p></div></div>
 <div class="panel"><div class="panelhead"><h2>Appearance studio</h2><span class="status">Model-aware</span></div><div class="content"><div class="label">Paint preset</div><div class="swatches"><button class="swatch selected" style="background:#d91f35" data-color="#d91f35" aria-label="Red"></button><button class="swatch" style="background:#f1f2f4" data-color="#f1f2f4" aria-label="White"></button><button class="swatch" style="background:#15191f" data-color="#15191f" aria-label="Black"></button><button class="swatch" style="background:#a6b2c0" data-color="#a6b2c0" aria-label="Silver"></button><button class="swatch" style="background:#8dff35" data-color="#8dff35" aria-label="Lime"></button><button class="swatch" style="background:#1682d4" data-color="#1682d4" aria-label="Blue"></button></div><p class="small" id="paintStatus">Paint presets target materials whose names look like body/paint. Use the full customizer below for additional options.</p><hr style="border:0;border-top:1px solid var(--line);margin:18px 0"><div class="label">Vehicle snapshot</div><div class="specs"><div class="spec"><b>3D asset</b><span>Existing McLaren Spider GLB</span></div><div class="spec"><b>Viewer</b><span>Orbit, zoom, auto-rotate</span></div><div class="spec"><b>AR handoff</b><span>Device/browser dependent</span></div><div class="spec"><b>Engineering modes</b><span>Conceptual simulations</span></div></div><p class="note" style="margin-top:14px">Lighting buttons control the visual demo indicators; they do not modify the GLB's actual electrical system or add physical lamp geometry.</p></div></div></div></section>
 
 <div class="panel" style="margin-top:16px"><div class="panelhead"><h2>Game-style car customizer</h2><span class="status">Live 3D material edits</span></div><div class="content">
@@ -203,6 +219,34 @@ const oldSound=document.getElementById('sound'); if(oldSound){oldSound.addEventL
 </div></div>
 
 <section class="page" id="builder"><div class="grid"><div class="panel"><div class="panelhead"><h2>Concept chassis configurator</h2><span class="status">Live layout</span></div><div class="content"><canvas id="chassisCanvas" class="chassis" aria-label="Schematic top-down vehicle chassis"></canvas><p class="small">The schematic updates from your architecture selections. This is a design concept—not a manufacturing-ready CAD model or validated structural design.</p><div class="two"><div class="field"><label for="layout">Engine placement</label><select id="layout"><option>Mid-engine</option><option>Front-engine</option><option>Rear-engine</option><option>Electric skateboard</option></select></div><div class="field"><label for="drive">Drivetrain</label><select id="drive"><option>RWD</option><option>FWD</option><option>AWD</option></select></div><div class="field"><label for="body">Body concept</label><select id="body"><option>Coupe</option><option>Roadster</option><option>GT</option><option>Track special</option><option>Electric hypercar</option></select></div><div class="field"><label for="frame">Chassis architecture</label><select id="frame"><option>Carbon monocoque</option><option>Aluminium spaceframe</option><option>Steel unibody</option><option>EV skateboard</option></select></div></div><div class="field"><label for="wheelbase">Wheelbase <b id="wheelbaseVal">2700 mm</b></label><input id="wheelbase" type="range" min="2400" max="3200" step="25" value="2700"></div><div class="field"><label for="track">Track width <b id="trackVal">1650 mm</b></label><input id="track" type="range" min="1500" max="1800" step="10" value="1650"></div><div class="field"><label for="mass">Target mass <b id="massVal">1450 kg</b></label><input id="mass" type="range" min="900" max="2200" step="25" value="1450"></div><button class="primary" id="saveBuild">Save build summary</button><button id="resetBuild">Reset configuration</button></div></div>
+
+<div class="panel" id="builderVehiclePanel" style="margin-top:16px">
+ <div class="panelhead"><h2>Build preview · 3D vehicle</h2><span class="status" id="builderVehicleStatus">Choose a model</span></div>
+ <div class="content">
+  <p class="small">Select a supplied vehicle, set a paint colour and apply it to the loaded 3D model. Chassis dimensions above remain a concept layout; they do not reshape the imported production model.</p>
+  <div class="field"><label for="builderVehicleModel">Vehicle model</label>
+   <select id="builderVehicleModel">
+    <option value="./mclaren_spider.glb">McLaren Spider</option>
+    <option value="./2022_mclaren_765lt.glb">McLaren 765LT</option>
+    <option value="./mclaren_720s_lbwk_unfinished.glb">McLaren 720S LBWK (unfinished)</option>
+    <option value="./mc_laren.glb">McLaren concept</option>
+    <option value="./alfa_romeo_giulia_concept.glb">Alfa Romeo-inspired concept</option>
+   </select>
+  </div>
+  <model-viewer id="builderCarPreview" src="./mclaren_spider.glb" alt="3D vehicle build preview" camera-controls auto-rotate shadow-intensity="1" exposure="1" environment-image="neutral" loading="eager"></model-viewer>
+  <div class="two" style="margin-top:12px">
+   <div class="field"><label for="builderPaint">Body colour</label><input id="builderPaint" type="color" value="#d91f35"></div>
+   <div class="field"><label for="builderFinish">Finish</label><select id="builderFinish"><option value="gloss">Gloss</option><option value="metal">Metallic</option><option value="matte">Matte-like</option></select></div>
+  </div>
+  <div class="controls" style="padding-left:0">
+   <button class="primary" id="builderApplyCar">Apply build</button>
+   <button id="builderResetCar">Reset preview</button>
+   <button id="builderARTest">Test car in camera / AR</button>
+  </div>
+  <p class="small" id="builderApplyMessage" role="status">Load a model, choose a colour and press Apply build.</p>
+ </div>
+</div>
+
 <div class="panel" style="margin-top:16px"><div class="panelhead"><h2>Suspension & steering engineering bay</h2><span class="status">Interactive schematic</span></div><div class="content">
 <p class="small">Explore how a spring, damper, control arms, anti-roll bar and steering linkage are arranged. The settings update a live schematic and simple quarter-car response model; they are educational estimates, not a validated vehicle setup.</p>
 <canvas id="suspensionCanvas" class="chassis" style="height:360px" aria-label="Animated suspension with coil spring, damper, control arms, hub and tyre"></canvas>
@@ -316,7 +360,7 @@ const oldSound=document.getElementById('sound'); if(oldSound){oldSound.addEventL
 </div>
 </section>
 
-<div class="footer">AutoAR Studio · Single-page GitHub Pages upgrade. Keep <code>mclaren_spider.glb</code> beside this file; <code>2022_mclaren_765lt.glb</code> remains untouched in the repository. External model-viewer library requires an internet connection.</div>
+<div class="footer">AutoAR Studio · Vehicle customizer and engineering labs. Keep <code>mclaren_spider.glb</code> beside this file; <code>2022_mclaren_765lt.glb</code> remains untouched in the repository. External model-viewer library requires an internet connection.</div>
 
 <section class="page" id="roadtest">
  <div class="hero" style="margin-bottom:14px"><div><div class="eyebrow">Closed-course simulator · educational prototype</div><h1 style="font-size:clamp(26px,3vw,40px)">Build. Drive. Test.</h1><p>Configure a concept vehicle, then test acceleration, braking, steering response and driver reaction on a generated simulation road.</p></div><button class="primary" id="roadStart">▶ Start road test</button></div>
@@ -350,7 +394,53 @@ const oldSound=document.getElementById('sound'); if(oldSound){oldSound.addEventL
  </div>
 </section>
 
+
+<section class="page" id="customizer">
+ <div class="hero" style="margin-bottom:14px"><div><div class="eyebrow">Paint · Livery · Personalise · Inspect</div><h1 style="font-size:clamp(28px,3.5vw,44px)">Your car. Your spec.</h1><p>Switch among the supplied vehicle models, customise paint and a generated livery, add your own text, and prepare a saved build card.</p></div><div class="controls" style="padding-left:0"><button class="primary" id="customizerTryAR">📱 Try selected car in AR</button><button id="customizerReset">Reset setup</button></div></div>
+ <div class="customizer-layout">
+  <div class="panel"><div class="panelhead"><h2 id="customizerVehicleTitle">McLaren Spider · Custom studio</h2><span class="status" id="customizerStatus">Loading model</span></div><div class="customizer-preview"><model-viewer id="customizerCar" src="./mclaren_spider.glb" alt="Customisable 3D vehicle preview" camera-controls shadow-intensity="1.1" exposure="1" environment-image="neutral" ar ar-placement="floor" ar-modes="scene-viewer webxr quick-look" loading="eager"></model-viewer></div><div class="controls"><button id="customizerRotate" class="active">Auto rotate: on</button><button id="customizerResetView">Reset view</button><button id="customizerSave" class="primary">Save build card</button></div><div class="content"><div class="metrics"><div class="metric"><strong id="customizerMaterialCount">—</strong><span>MATERIALS FOUND</span></div><div class="metric"><strong id="customizerPaintCount">—</strong><span>PAINT MATCHES</span></div><div class="metric"><strong id="customizerWrapState">READY</strong><span>LIVERY TEXTURE</span></div></div><p class="note" style="margin-top:12px">Customisation edits the loaded GLB's exposed materials. The generated livery texture is experimental because each model has its own UV layout; inspect the result before using it in AR.</p></div></div>
+  <div class="panel"><div class="panelhead"><h2>Build your look</h2><span class="status">Live preview</span></div><div class="content">
+   <div class="field"><label for="customizerModel">Vehicle model</label><select id="customizerModel"><option value="./mclaren_spider.glb">McLaren Spider</option><option value="./2022_mclaren_765lt.glb">McLaren 765LT</option><option value="./mclaren_720s_lbwk_unfinished.glb">McLaren 720S LBWK (unfinished)</option><option value="./mc_laren.glb">McLaren concept model</option><option value="./alfa_romeo_giulia_concept.glb">Alfa Romeo Giulia-inspired concept</option></select></div>
+   <div class="field"><label for="customizerPaint">Body colour</label><div class="customizer-swatches" id="customizerSwatches"><button class="selected" data-paint="#d91f35" style="background:#d91f35" aria-label="Red"></button><button data-paint="#f4f4f4" style="background:#f4f4f4" aria-label="White"></button><button data-paint="#11151b" style="background:#11151b" aria-label="Black"></button><button data-paint="#0c75cf" style="background:#0c75cf" aria-label="Blue"></button><button data-paint="#b7bec7" style="background:#b7bec7" aria-label="Silver"></button><button data-paint="#ff790e" style="background:#ff790e" aria-label="Papaya orange"></button><button data-paint="#6d35cf" style="background:#6d35cf" aria-label="Violet"></button><button data-paint="#c8ff38" style="background:#c8ff38" aria-label="Lime"></button></div><input id="customizerPaint" type="color" value="#d91f35" style="margin-top:10px;width:100%;height:42px;padding:3px" /></div>
+   <div class="two"><div class="field"><label for="customizerWheel">Wheel finish</label><select id="customizerWheel"><option value="#171a20">Gloss black</option><option value="#bfc7cf">Silver</option><option value="#b08b5a">Bronze</option><option value="#c8ff38">Lime</option><option value="#ffffff">White</option></select></div><div class="field"><label for="customizerCaliper">Caliper colour</label><select id="customizerCaliper"><option value="#e52b3b">Red</option><option value="#1682d4">Blue</option><option value="#c8ff38">Lime</option><option value="#f28c28">Orange</option></select></div></div>
+   <div class="field"><label for="customizerFinish">Paint finish</label><select id="customizerFinish"><option value="gloss">Gloss</option><option value="metallic">Metallic</option><option value="matte">Matte-like</option></select></div>
+   <hr style="border:0;border-top:1px solid var(--line);margin:18px 0"><div class="label">Custom wrap / livery</div>
+   <div class="field"><label for="wrapText">Text to write on your design</label><input id="wrapText" maxlength="24" value="AUTOAR STUDIO" placeholder="Your name / team / number" /></div>
+   <div class="two"><div class="field"><label for="wrapStyle">Livery style</label><select id="wrapStyle"><option value="racing">Racing stripes</option><option value="lightning">Lightning</option><option value="split">Colour block</option><option value="minimal">Minimal text</option></select></div><div class="field"><label for="wrapAccent">Wrap accent colour</label><input id="wrapAccent" type="color" value="#c8ff38" style="width:100%;height:40px;padding:3px" /></div></div>
+   <div class="field"><label for="wrapScale">Text size <b id="wrapScaleValue">Large</b></label><input id="wrapScale" type="range" min="1" max="3" value="2" /></div>
+   <canvas id="wrapPreview" class="design-canvas" width="1000" height="220" aria-label="Preview of the generated custom livery design"></canvas>
+   <div class="controls" style="padding-left:0"><button class="primary" id="applyLivery">Apply paint + livery</button><button id="clearLivery">Clear livery</button><button id="exportLivery">Export design PNG</button></div>
+   <p class="note">A custom livery can be generated and applied to a paint material when the GLB exposes compatible material/UVs. The UV layout differs by asset, so text placement on every body panel is not guaranteed. This does not add physical mesh geometry.</p>
+  </div></div>
+ </div>
+ <div class="grid" style="margin-top:16px">
+  <div class="panel"><div class="panelhead"><h2>Panel & component inspection</h2><span class="status">Model capability check</span></div><div class="content"><p class="small">Door, hood/bonnet, boot/trunk, wheel and headlight opening/part swaps require separately named, pivoted meshes in the source GLB. The supplied McLaren models mostly have merged or generically named nodes, so the controls below show the requested inspection state without pretending to physically hinge geometry that is not present.</p><div class="two"><button data-inspect="driverDoor">Driver door</button><button data-inspect="passengerDoor">Passenger door</button><button data-inspect="hood">Front hood / bonnet</button><button data-inspect="trunk">Rear boot / trunk</button><button data-inspect="headlights">Headlights</button><button data-inspect="wheels">Wheels</button></div><div class="part-state" style="margin-top:12px"><b id="inspectionTitle">Select a component</b><span id="inspectionDescription">Inspection details will appear here.</span></div><p class="small" style="margin-top:12px">Next step for real opening panels: use a model with separate door/hood/trunk meshes and correct hinge pivots, or edit/rig the GLB in Blender. This configurator does not fake an opening animation.</p></div></div>
+  <div class="panel"><div class="panelhead"><h2>Build card & compatibility</h2><span class="status">Exportable</span></div><div class="content"><div id="buildCardPreview" class="specs"><div class="spec"><b>Vehicle</b><span>McLaren Spider</span></div><div class="spec"><b>Paint</b><span>Volcano red</span></div><div class="spec"><b>Livery</b><span>AUTOAR STUDIO</span></div><div class="spec"><b>Wheels</b><span>Gloss black</span></div></div><div class="controls" style="padding-left:0"><button class="primary" id="downloadBuildCard">Download build card JSON</button></div><p class="small" id="customizerSaveMessage">Your build card is prepared locally in the browser.</p></div></div>
+ </div>
+ <div class="grid" style="margin-top:16px">
+  <div class="panel"><div class="panelhead"><h2>Interactive inspection controls</h2><span class="status">Live 3D viewer</span></div><div class="content">
+   <p class="small">Choose a view to inspect a specific area. Camera focus is interactive; actual door/hood/trunk movement requires separate rigged meshes in the GLB.</p>
+   <div class="two"><button data-focus="front">🔦 Front / headlights</button><button data-focus="side">🚪 Side / doors</button><button data-focus="rear">🧳 Rear / trunk</button><button data-focus="wheel">🛞 Wheel close-up</button><button data-focus="top">⬆ Top view</button><button data-focus="reset">↻ Full car view</button></div>
+   <div class="controls" style="padding-left:0"><button id="customizerLights" class="primary">Headlights: off</button><button id="customizerSpin">Wheel motion demo: off</button><button id="customizerInspectReset">Reset inspection</button></div>
+   <div class="part-state" style="margin-top:10px"><b id="interactivePartTitle">Ready to inspect</b><span id="interactivePartText">Select a camera target above. Material and mesh availability depends on the selected GLB.</span></div>
+  </div></div>
+  <div class="panel"><div class="panelhead"><h2>Upload your own logo / decal</h2><span class="status">Livery artwork</span></div><div class="content">
+   <p class="small">Upload a transparent PNG logo to include it in the livery preview. Drag on the canvas to reposition your text/logo. Export the design as a PNG.</p>
+   <div class="field"><label for="customizerLogoUpload">Logo image (PNG recommended)</label><input id="customizerLogoUpload" type="file" accept="image/png,image/jpeg,image/webp" /></div>
+   <div class="two"><div class="field"><label for="customizerLogoWidth">Logo size</label><input id="customizerLogoWidth" type="range" min="60" max="360" value="180" /></div><div class="field"><label for="customizerTextY">Text vertical position</label><input id="customizerTextY" type="range" min="40" max="190" value="112" /></div></div>
+   <div class="controls" style="padding-left:0"><button id="customizerClearLogo">Remove logo</button><button id="customizerCenterLogo">Center design</button></div>
+   <p class="note" id="customizerDecalStatus">No custom logo loaded.</p>
+  </div></div>
+ </div>
+</section>
+
 </main><div class="toast" id="toast"></div>
+<div id="autoarCameraModal" role="dialog" aria-modal="true" aria-label="Camera AR test">
+ <div class="arbar"><strong>AutoAR · Camera / AR test</strong><button id="autoarCameraClose" type="button">✕ Close</button></div>
+ <video id="autoarCameraVideo" autoplay playsinline muted></video>
+ <model-viewer id="autoarCameraModel" src="./mclaren_spider.glb" alt="3D car overlay in camera preview" camera-controls auto-rotate shadow-intensity="1" environment-image="neutral"></model-viewer>
+ <div class="arhelp"><strong id="autoarCameraTitle">Camera preview mode</strong><div id="autoarCameraMessage">The car is a movable 3D overlay over the live camera. This is a camera-overlay test, not world-anchored tracking on desktop.</div><button id="autoarFlipCamera" type="button">Switch camera</button></div>
+</div>
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 let toastTimer;function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2400)}
@@ -369,7 +459,13 @@ function activateAR(){
  try{car.activateAR();}catch(err){toast('AR could not launch. Open the site in your phone browser and try again.');if(hint)hint.textContent='AR launch failed: '+(err?.message||'browser/device restriction');}
 }
 
-$('#resetView').onclick=()=>{car.cameraOrbit='auto auto auto';car.cameraTarget='auto auto auto';car.fieldOfView='auto';car.jumpCameraToGoal()};$('#rotate').onclick=e=>{car.autoRotate=!car.autoRotate;e.currentTarget.classList.toggle('active',car.autoRotate);e.currentTarget.textContent='Auto rotate: '+(car.autoRotate?'on':'off')};function activateAR(){if(car.canActivateAR)car.activateAR();else toast('AR is not available yet on this browser/device, or the model has not loaded.')}$('#tryAR').onclick=activateAR;$('#learnAR').onclick=()=>{$('[data-page="garage"]').click();setTimeout(activateAR,300)};
+$('#resetView').onclick=()=>{car.cameraOrbit='auto auto auto';car.cameraTarget='auto auto auto';car.fieldOfView='auto';car.jumpCameraToGoal()};$('#rotate').onclick=e=>{car.autoRotate=!car.autoRotate;e.currentTarget.classList.toggle('active',car.autoRotate);e.currentTarget.textContent='Auto rotate: '+(car.autoRotate?'on':'off')};function activateAR(){
+ if(!customElements.get('model-viewer')){toast('3D viewer library did not load. Check internet and reload.');return;}
+ if(!car.loaded){toast('Wait for the vehicle to finish loading first.');$('#modelHint').textContent='Wait until the 3D car says Model ready, then try again.';return;}
+ if(car.canActivateAR){try{car.activateAR();return}catch(e){console.warn('Native AR launch failed; trying camera preview',e)}}
+ if(window.AUTOAR_openCameraTest){window.AUTOAR_openCameraTest(car.getAttribute('src')||'./mclaren_spider.glb');}
+ else {toast('Camera test module is not ready yet. Reload the page.');}
+}$('#tryAR').onclick=activateAR;$('#learnAR').onclick=()=>{$('[data-page="garage"]').click();setTimeout(activateAR,300)};
 let lamps=false,hazards=false;$('#headlights').onclick=e=>{lamps=!lamps;e.currentTarget.textContent='Headlights: '+(lamps?'on':'off');e.currentTarget.classList.toggle('active',lamps);toast('Headlight indicator '+(lamps?'enabled':'disabled')+' (visual demo only)')};$('#hazards').onclick=e=>{hazards=!hazards;e.currentTarget.textContent='Hazards: '+(hazards?'on':'off');e.currentTarget.classList.toggle('active',hazards);toast('Hazard indicator '+(hazards?'enabled':'disabled')+' (visual demo only)')};
 function hexRGBA(h){return [parseInt(h.slice(1,3),16)/255,parseInt(h.slice(3,5),16)/255,parseInt(h.slice(5,7),16)/255,1]}
 $$('[data-color]').forEach(b=>b.onclick=()=>{$$('[data-color]').forEach(x=>x.classList.toggle('selected',x===b));let changed=0;try{for(const m of (car.model?.materials||[])){if(/paint|body|exterior|carpaint|main|shell/i.test(m.name||'')){m.pbrMetallicRoughness.setBaseColorFactor(hexRGBA(b.dataset.color));changed++}}}catch(e){}$('#paintStatus').textContent=changed?`Updated ${changed} likely body material(s). Some materials may still use textures.`:'Preset selected. This GLB may not expose editable body paint materials.';toast(changed?'Paint applied to matching materials':'Paint preset selected; material match unavailable')});
@@ -912,6 +1008,148 @@ updateBuild();updatePhysics();updateSuspensionMetrics();drawSuspension();request
  document.getElementById('arDeviceLaunch')?.addEventListener('click',async()=>{const viewer=document.getElementById('arCameraModel');if(!viewer){setStatus('3D viewer unavailable.');return}try{if(typeof viewer.activateAR==='function'){await viewer.activateAR();setStatus('Requested device AR. Follow the browser/device prompt.')}else setStatus('Native AR is unavailable in this browser. Use the live camera overlay on this laptop, or try a supported phone.')}catch(err){setStatus('Native AR could not launch here. On desktop, use the camera overlay; on mobile, use HTTPS and a supported AR browser.')}});
  document.getElementById('roadVehicle')?.addEventListener('change',e=>{const viewer=document.getElementById('arCameraModel');if(viewer)viewer.src=e.target.value==='alfa'?'./alfa_romeo_giulia_concept.glb':'./2022_mclaren_765lt.glb';const label=document.getElementById('arCameraVehicleLabel');if(label)label.textContent=(e.target.value==='alfa'?'Alfa Romeo Giulia-inspired concept':'McLaren 765LT')+' · drag to rotate'});
  window.addEventListener('beforeunload',()=>{if(stream)stream.getTracks().forEach(t=>t.stop())});
+})();
+</script>
+
+
+<script>
+(()=>{
+ const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+ const viewer=$('#customizerCar'); if(!viewer)return;
+ const modelLabels={'./mclaren_spider.glb':'McLaren Spider','./2022_mclaren_765lt.glb':'McLaren 765LT','./mclaren_720s_lbwk_unfinished.glb':'McLaren 720S LBWK (unfinished)','./mc_laren.glb':'McLaren concept model','./alfa_romeo_giulia_concept.glb':'Alfa Romeo Giulia-inspired concept'};
+ let autoRotate=true, appliedTexture=null, lastBuild={};
+ const toRGBA=h=>[parseInt(h.slice(1,3),16)/255,parseInt(h.slice(3,5),16)/255,parseInt(h.slice(5,7),16)/255,1];
+ function report(){const mats=viewer.model?.materials||[];$('#customizerMaterialCount').textContent=mats.length||'0';$('#customizerPaintCount').textContent=mats.filter(m=>/paint|body|exterior|colou?red|shell|carpaint/i.test(m.name||'')).length;}
+ function setModel(path){viewer.src=path;$('#customizerModel').value=path;$('#garageModelSelect').value=path;$('#car').src=path;$('#customizerVehicleTitle').textContent=(modelLabels[path]||'Vehicle')+' · Custom studio';$('#customizerStatus').textContent='Loading model…';const ar=$('#arCameraModel');if(ar)ar.src=path;const label=$('#arCameraVehicleLabel');if(label)label.textContent=(modelLabels[path]||'Vehicle')+' · drag to rotate';}
+ $('#customizerModel').addEventListener('change',e=>setModel(e.target.value));$('#garageModelSelect')?.addEventListener('change',e=>{setModel(e.target.value);$('#customizerModel').value=e.target.value;});
+ viewer.addEventListener('load',()=>{report();$('#customizerStatus').textContent='Model ready';try{applyPaintAndParts(false)}catch(e){};});viewer.addEventListener('error',()=>{$('#customizerStatus').textContent='Model failed — check file path';});
+ $('#customizerRotate').onclick=e=>{autoRotate=!autoRotate;viewer.autoRotate=autoRotate;e.currentTarget.textContent='Auto rotate: '+(autoRotate?'on':'off');e.currentTarget.classList.toggle('active',autoRotate)};
+ $('#customizerResetView').onclick=()=>{viewer.cameraOrbit='auto auto auto';viewer.cameraTarget='auto auto auto';viewer.fieldOfView='auto';viewer.jumpCameraToGoal()};
+ function applyPaintAndParts(notify=true){const mats=viewer.model?.materials||[];let body=0,wheel=0,caliper=0;const paint=$('#customizerPaint').value,wc=$('#customizerWheel').value,cc=$('#customizerCaliper').value,finish=$('#customizerFinish').value;
+  for(const m of mats){const n=(m.name||'').toLowerCase();const p=m.pbrMetallicRoughness;if(!p)continue;try{if(/wheel|rim|alloy|spoke|tyre|tire/.test(n)){p.setBaseColorFactor(toRGBA(wc));p.setMetallicFactor(.75);p.setRoughnessFactor(finish==='matte'?.7:.25);wheel++}else if(/caliper|brake/.test(n)){p.setBaseColorFactor(toRGBA(cc));caliper++}else if(/paint|body|exterior|colou?red|shell|carpaint/.test(n)){p.setBaseColorFactor(toRGBA(paint));p.setMetallicFactor(finish==='metallic'?.8:finish==='gloss'?.45:.08);p.setRoughnessFactor(finish==='matte'?.82:finish==='gloss'?.2:.32);body++}}catch(e){}}
+  report();$('#customizerStatus').textContent=body?'Paint applied':'No named body-paint material matched';if(notify)window.toast?.(body?'Custom paint applied to '+body+' body material(s)':'Selected paint; this model may not expose body paint material');updateBuildCard();return {body,wheel,caliper};
+ }
+ $('#customizerPaint').addEventListener('input',()=>{ $$('#customizerSwatches button').forEach(b=>b.classList.toggle('selected',b.dataset.paint===$('#customizerPaint').value));applyPaintAndParts(false);drawWrap()});
+ $$('#customizerSwatches button').forEach(b=>b.addEventListener('click',()=>{$$('#customizerSwatches button').forEach(x=>x.classList.toggle('selected',x===b));$('#customizerPaint').value=b.dataset.paint;applyPaintAndParts(false);drawWrap()}));
+ ['customizerWheel','customizerCaliper','customizerFinish'].forEach(id=>$('#'+id).addEventListener('change',()=>applyPaintAndParts(false)));
+ let customLogo=null,logoX=780,logoY=112,dragDecal=false;
+ function drawWrap(){const c=$('#wrapPreview'),x=c.getContext('2d'),base=$('#customizerPaint').value,accent=$('#wrapAccent').value,text=($('#wrapText').value||'AUTOAR').toUpperCase(),style=$('#wrapStyle').value,scale=+$('#wrapScale').value;$('#wrapScaleValue').textContent=['','Small','Large','Extra large'][scale];x.clearRect(0,0,c.width,c.height);x.fillStyle=base;x.fillRect(0,0,c.width,c.height);x.globalAlpha=.94;x.fillStyle=accent;
+  if(style==='racing'){x.beginPath();x.moveTo(100,0);x.lineTo(255,0);x.lineTo(430,220);x.lineTo(275,220);x.closePath();x.fill();x.beginPath();x.moveTo(450,0);x.lineTo(510,0);x.lineTo(685,220);x.lineTo(625,220);x.closePath();x.fill()}
+  else if(style==='lightning'){x.beginPath();x.moveTo(470,0);x.lineTo(620,0);x.lineTo(520,92);x.lineTo(665,92);x.lineTo(375,220);x.lineTo(450,118);x.lineTo(330,118);x.closePath();x.fill()}
+  else if(style==='split'){x.fillRect(0,0,260,220);x.fillRect(780,0,220,220)}
+  x.globalAlpha=1;x.fillStyle='#ffffff';x.strokeStyle='#00000088';x.lineWidth=5;x.textAlign='center';x.textBaseline='middle';x.font=`900 ${scale===1?36:scale===2?56:76}px system-ui, sans-serif`;const textY=+$ ('#customizerTextY')?.value||112;x.strokeText(text,500,textY,920);x.fillText(text,500,textY,920);if(customLogo){const lw=+$ ('#customizerLogoWidth')?.value||180,lh=lw*(customLogo.height/customLogo.width);x.drawImage(customLogo,logoX-lw/2,logoY-lh/2,lw,lh)}x.fillStyle='#ffffffcc';x.font='bold 15px system-ui';x.fillText('CUSTOM LIVERY PREVIEW',500,190);$('#customizerWrapState').textContent=style.toUpperCase();}
+ window.AUTOAR_WRAP={setLogo(img){customLogo=img;drawWrap()},clearLogo(){customLogo=null;drawWrap()},moveLogo(x,y){logoX=x;logoY=y;drawWrap()},centerLogo(){logoX=500;logoY=112;drawWrap()},redraw:drawWrap};
+ ['wrapText','wrapStyle','wrapAccent','wrapScale'].forEach(id=>$('#'+id).addEventListener('input',drawWrap));
+ async function applyLivery(){drawWrap();const canvas=$('#wrapPreview');try{const uri=canvas.toDataURL('image/png');if(typeof viewer.createTexture!=='function')throw new Error('This model-viewer version does not expose texture creation');const texture=await viewer.createTexture(uri);let matches=0;for(const m of (viewer.model?.materials||[])){if(/paint|body|exterior|colou?red|shell|carpaint/i.test(m.name||'')){try{m.pbrMetallicRoughness.baseColorTexture.setTexture(texture);m.pbrMetallicRoughness.setBaseColorFactor([1,1,1,1]);matches++}catch(e){}}}if(matches){appliedTexture=texture;$('#customizerWrapState').textContent='APPLIED';$('#customizerStatus').textContent='Livery texture applied';window.toast?.('Livery texture applied; UV mapping varies by model');}else{throw new Error('No paint/body material name matched')} }catch(e){$('#customizerWrapState').textContent='PREVIEW ONLY';$('#customizerStatus').textContent='Livery preview ready';window.toast?.('Design preview ready. This model cannot accept the generated livery texture automatically.');}updateBuildCard();}
+ $('#applyLivery').onclick=applyLivery;$('#clearLivery').onclick=()=>{appliedTexture=null;applyPaintAndParts(false);$('#customizerWrapState').textContent='CLEARED';drawWrap();window.toast?.('Base paint restored; livery preview cleared')};$('#exportLivery').onclick=()=>{drawWrap();const a=document.createElement('a');a.href=$('#wrapPreview').toDataURL('image/png');a.download='autoar-custom-livery.png';a.click()};
+ const inspections={driverDoor:['Driver door','The selected model must have a separate driver-door mesh with a hinge pivot for a true opening animation. Current supplied McLaren assets do not expose a clearly named door node.'],passengerDoor:['Passenger door','True movement requires a separate passenger-door mesh and hinge pivot in the source GLB.'],hood:['Front hood / bonnet','The model must contain a separate bonnet mesh and hinge pivot; current supplied McLaren assets do not clearly expose one.'],trunk:['Rear boot / trunk','The model must contain a separate boot/trunk mesh and hinge pivot; current supplied McLaren assets do not clearly expose one.'],headlights:['Headlights','Headlight material recolouring is possible only if the GLB exposes a separate named light material. Geometry replacement needs a separate mesh.'],wheels:['Wheels','Wheel colour can update if wheel/rim materials are named. Wheel style replacement needs alternate wheel geometry.']};
+ $$('[data-inspect]').forEach(b=>b.addEventListener('click',()=>{const d=inspections[b.dataset.inspect];$('#inspectionTitle').textContent=d[0];$('#inspectionDescription').textContent=d[1];$$('[data-inspect]').forEach(x=>x.classList.toggle('active',x===b))}));
+ function updateBuildCard(){const data={vehicle:$('#customizerModel').selectedOptions[0]?.text||'Vehicle',modelPath:$('#customizerModel').value,paint:$('#customizerPaint').value,finish:$('#customizerFinish').value,wheelFinish:$('#customizerWheel').value,caliperColour:$('#customizerCaliper').value,liveryText:$('#wrapText').value,liveryStyle:$('#wrapStyle').value,liveryAccent:$('#wrapAccent').value,liveryTextScale:+$('#wrapScale').value};lastBuild=data;$('#buildCardPreview').innerHTML=[['Vehicle',data.vehicle],['Paint',data.paint],['Finish',data.finish],['Wheels',data.wheelFinish],['Calipers',data.caliperColour],['Livery',data.liveryText||'None']].map(([a,b])=>`<div class="spec"><b>${a}</b><span>${String(b).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}</span></div>`).join('');}
+ $('#customizerSave').onclick=()=>{updateBuildCard();$('#customizerSaveMessage').textContent='Build card ready. Use Download build card JSON to save your settings.';window.toast?.('Build settings saved in the page')};$('#downloadBuildCard').onclick=()=>{updateBuildCard();const blob=new Blob([JSON.stringify(lastBuild,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='autoar-build-card.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+ $('#customizerReset').onclick=()=>{$('#customizerPaint').value='#d91f35';$('#customizerWheel').value='#171a20';$('#customizerCaliper').value='#e52b3b';$('#customizerFinish').value='gloss';$('#wrapText').value='AUTOAR STUDIO';$('#wrapStyle').value='racing';$('#wrapAccent').value='#c8ff38';$('#wrapScale').value=2;applyPaintAndParts(false);drawWrap();updateBuildCard()};
+ $('#customizerTryAR').onclick=()=>{const mainCar=$('#car'),path=$('#customizerModel').value;if(!mainCar){window.toast?.('Open the 3D Garage to launch AR');return;}$('#garageModelSelect').value=path;const tab=$('[data-page="garage"]');if(tab)tab.click();const applyToMain=()=>{const mats=mainCar.model?.materials||[];for(const m of mats){const n=(m.name||'').toLowerCase(),p=m.pbrMetallicRoughness;if(!p)continue;try{if(/wheel|rim|alloy|spoke|tyre|tire/.test(n))p.setBaseColorFactor(toRGBA($('#customizerWheel').value));else if(/caliper|brake/.test(n))p.setBaseColorFactor(toRGBA($('#customizerCaliper').value));else if(/paint|body|exterior|colou?red|shell|carpaint/.test(n))p.setBaseColorFactor(toRGBA($('#customizerPaint').value));}catch(e){}}const btn=$('#tryAR');if(btn)btn.click();else window.toast?.('Open this project on a compatible phone to use AR');};if(mainCar.getAttribute('src')!==path){mainCar.addEventListener('load',applyToMain,{once:true});mainCar.src=path;}else if(mainCar.loaded){applyToMain();}else{mainCar.addEventListener('load',applyToMain,{once:true});mainCar.src=path;}};
+ $('#garageModelSelect')?.addEventListener('change',e=>{if($('#customizerModel').value!==e.target.value)setModel(e.target.value)});
+ function setModel(path){viewer.src=path;$('#customizerModel').value=path;$('#customizerVehicleTitle').textContent=(modelLabels[path]||'Vehicle')+' · Custom studio';$('#customizerStatus').textContent='Loading model…'}
+ drawWrap();updateBuildCard();
+})();
+</script>
+
+
+<script>
+(()=>{
+ const $=id=>document.getElementById(id), viewer=$('customizerCar'); if(!viewer)return;
+ const info=$('interactivePartText'),title=$('interactivePartTitle');
+ const views={front:{orbit:'0deg 75deg 70%',target:'0m 0.45m 1.1m',title:'Front / headlights',desc:'Front inspection view. Headlight illumination can only be rendered on meshes/materials exposed by this model.'},side:{orbit:'90deg 75deg 70%',target:'0m 0.45m 0m',title:'Side / doors',desc:'Side inspection view. Physical door opening requires a separately named door mesh and hinge pivot in the GLB.'},rear:{orbit:'180deg 75deg 70%',target:'0m 0.45m -1m',title:'Rear / trunk',desc:'Rear inspection view. Boot/trunk animation requires a rigged hatch or lid mesh in the source model.'},wheel:{orbit:'35deg 82deg 35%',target:'0.75m 0.25m 0.45m',title:'Wheel close-up',desc:'Wheel inspection view. Wheel color can be changed when the GLB exposes wheel materials.'},top:{orbit:'0deg 10deg 100%',target:'0m 0.3m 0m',title:'Top view',desc:'Top-down inspection for roof, hood and overall livery layout.'},reset:{orbit:'auto auto auto',target:'auto auto auto',title:'Full vehicle view',desc:'Returned to the full vehicle view.'}};
+ document.querySelectorAll('[data-focus]').forEach(b=>b.addEventListener('click',()=>{const v=views[b.dataset.focus];if(!v)return;viewer.cameraOrbit=v.orbit;viewer.cameraTarget=v.target;viewer.jumpCameraToGoal();title.textContent=v.title;info.textContent=v.desc;}));
+ let lamps=false,spin=false,spinTimer=null,originalOrbit='auto auto auto';
+ $('customizerLights')?.addEventListener('click',()=>{lamps=!lamps;let changed=0;for(const m of (viewer.model?.materials||[])){const n=(m.name||'').toLowerCase();try{if(/head.?light|lamp|front.?light|led|light.?lens/.test(n)){const em=m.emissiveFactor;if(typeof m.setEmissiveFactor==='function')m.setEmissiveFactor(lamps?[1,.82,.48]:[0,0,0]);else if(m.emissiveFactor&&m.emissiveFactor.set)m.emissiveFactor.set(lamps?1:0,lamps?.82:0,lamps?.48:0);changed++;}}catch(e){}}
+ $('customizerLights').textContent='Headlights: '+(lamps?'on':'off');$('customizerLights').classList.toggle('active',lamps);title.textContent=lamps?'Headlight demo enabled':'Headlight demo disabled';info.textContent=changed?'Updated '+changed+' matching light material(s). Actual visible glow depends on the model material.':'This model has no clearly named editable headlight material; the control state changed, but no fake light geometry was added.';});
+ $('customizerSpin')?.addEventListener('click',()=>{spin=!spin;viewer.autoRotate=spin;$('customizerSpin').textContent='Wheel motion demo: '+(spin?'on':'off');$('customizerSpin').classList.toggle('active',spin);title.textContent=spin?'Auto-rotation enabled':'Auto-rotation disabled';info.textContent=spin?'The model rotates for inspection. This is a whole-model preview, not individual wheel rotation; separate wheel meshes are required for real wheel spin.':'Model rotation paused.';});
+ $('customizerInspectReset')?.addEventListener('click',()=>{viewer.cameraOrbit='auto auto auto';viewer.cameraTarget='auto auto auto';viewer.fieldOfView='auto';viewer.jumpCameraToGoal();lamps=false;spin=false;viewer.autoRotate=false;$('customizerLights').textContent='Headlights: off';$('customizerSpin').textContent='Wheel motion demo: off';$('customizerLights').classList.remove('active');$('customizerSpin').classList.remove('active');title.textContent='Ready to inspect';info.textContent='Select a camera target above. Material and mesh availability depends on the selected GLB.';});
+ // Add uploaded logo to the existing livery canvas and support pointer-drag repositioning.
+ const canvas=$('wrapPreview');let redraw=()=>{try{window.AUTOAR_WRAP?.redraw()}catch(e){}};
+ $('customizerLogoUpload')?.addEventListener('change',e=>{const file=e.target.files?.[0];if(!file)return;if(!file.type.startsWith('image/'))return;const img=new Image();img.onload=()=>{logoX=780;logoY=112;window.AUTOAR_WRAP?.setLogo(img);$('customizerDecalStatus').textContent='Logo loaded. Drag it on the livery canvas to reposition.';redraw()};img.onerror=()=>{$('customizerDecalStatus').textContent='Could not read that image.'};img.src=URL.createObjectURL(file)});
+ $('customizerLogoWidth')?.addEventListener('input',redraw);$('customizerTextY')?.addEventListener('input',redraw);
+ $('customizerClearLogo')?.addEventListener('click',()=>{window.AUTOAR_WRAP?.clearLogo();$('customizerLogoUpload').value='';$('customizerDecalStatus').textContent='Logo removed.';redraw()});$('customizerCenterLogo')?.addEventListener('click',()=>{logoX=500;logoY=112;window.AUTOAR_WRAP?.centerLogo();if($('customizerTextY'))$('customizerTextY').value=112;redraw()});
+ if(canvas){const pos=e=>{const r=canvas.getBoundingClientRect();return {x:(e.clientX-r.left)/r.width*canvas.width,y:(e.clientY-r.top)/r.height*canvas.height}};canvas.style.cursor='crosshair';canvas.addEventListener('pointerdown',e=>{const p=pos(e);dragDecal=true;logoX=p.x;logoY=p.y;window.AUTOAR_WRAP?.moveLogo(logoX,logoY);canvas.setPointerCapture?.(e.pointerId);redraw()});canvas.addEventListener('pointermove',e=>{if(!dragDecal)return;const p=pos(e);logoX=p.x;logoY=p.y;window.AUTOAR_WRAP?.moveLogo(logoX,logoY);redraw()});const end=()=>dragDecal=false;canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',end)}
+})();
+</script>
+
+
+<script>
+/* V33 Build + Camera Test fixes */
+(()=> {
+ const $=id=>document.getElementById(id);
+ const safeToast=m=>{if(typeof window.toast==='function')window.toast(m);else console.info(m)};
+ const builderViewer=$('builderCarPreview'), builderModel=$('builderVehicleModel');
+ const mainViewer=$('car'), customViewer=$('customizerCar');
+ const paintHex=h=>[parseInt(h.slice(1,3),16)/255,parseInt(h.slice(3,5),16)/255,parseInt(h.slice(5,7),16)/255,1];
+ function applyBuilderPaint(){
+  if(!builderViewer?.model){$('builderApplyMessage').textContent='The 3D model is still loading. Wait for “Model ready”, then apply again.';return}
+  let count=0;
+  for(const m of (builderViewer.model.materials||[])){
+   const n=(m.name||'').toLowerCase();
+   if(/paint|body|exterior|shell|carpaint|colour|color|main/.test(n)){
+    try{m.pbrMetallicRoughness.setBaseColorFactor(paintHex($('builderPaint').value));if($('builderFinish').value==='matte')m.pbrMetallicRoughness.setRoughnessFactor(.78);else if($('builderFinish').value==='gloss')m.pbrMetallicRoughness.setRoughnessFactor(.22);else {m.pbrMetallicRoughness.setRoughnessFactor(.32);m.pbrMetallicRoughness.setMetallicFactor(.65)}count++}catch(e){}
+   }
+  }
+  $('builderApplyMessage').textContent=count?`Build applied: updated ${count} matching body material(s).`:'Colour selected, but this model does not expose a clearly named body material. Try another model; the build preview remains usable.';
+  $('builderVehicleStatus').textContent=count?'Build applied':'Preview ready';
+ }
+ builderModel?.addEventListener('change',()=>{
+  if(!builderViewer)return;
+  $('builderVehicleStatus').textContent='Loading model…';
+  builderViewer.src=builderModel.value;
+  builderViewer.addEventListener('load',()=>{$('builderVehicleStatus').textContent='Model ready';$('builderApplyMessage').textContent='Model loaded. Choose a colour and press Apply build.';},{once:true});
+  builderViewer.addEventListener('error',()=>{$('builderVehicleStatus').textContent='Model failed';$('builderApplyMessage').textContent='Could not load model. Keep the GLB file beside index.html and preserve the exact filename/capitalisation.';},{once:true});
+ });
+ builderViewer?.addEventListener('load',()=>{$('builderVehicleStatus').textContent='Model ready';});
+ builderViewer?.addEventListener('error',()=>{$('builderVehicleStatus').textContent='Model failed';$('builderApplyMessage').textContent='Could not load model. Check the GLB filename and repository root.';});
+ $('builderApplyCar')?.addEventListener('click',applyBuilderPaint);
+ $('builderPaint')?.addEventListener('input',()=>{if(builderViewer?.model)applyBuilderPaint()});
+ $('builderFinish')?.addEventListener('change',()=>{if(builderViewer?.model)applyBuilderPaint()});
+ $('builderResetCar')?.addEventListener('click',()=>{if(builderModel)builderModel.value='./mclaren_spider.glb';if(builderViewer)builderViewer.src='./mclaren_spider.glb';$('builderPaint').value='#d91f35';$('builderFinish').value='gloss';$('builderApplyMessage').textContent='Reset requested. Wait for model load, then press Apply build.';});
+ // Camera fallback works on HTTPS localhost/hosted pages with a camera permission. It is a 3D overlay, not world-tracked AR.
+ let stream=null, facing='environment';
+ async function openCameraTest(path){
+  const modal=$('autoarCameraModal'),video=$('autoarCameraVideo'),model=$('autoarCameraModel');
+  if(!modal)return;
+  modal.classList.add('open');document.body.style.overflow='hidden';
+  model.src=path||'./mclaren_spider.glb';
+  $('autoarCameraTitle').textContent='Starting camera…';
+  $('autoarCameraMessage').textContent='Allow camera access when prompted. Drag the 3D car to rotate it and use the viewer controls to zoom.';
+  try{
+   if(!navigator.mediaDevices?.getUserMedia)throw new Error('Camera API unavailable. Use the HTTPS GitHub Pages URL in a current browser.');
+   if(stream)stream.getTracks().forEach(t=>t.stop());
+   stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facing}},audio:false});
+   video.srcObject=stream;await video.play();
+   $('autoarCameraTitle').textContent='Live camera connected';
+   $('autoarCameraMessage').textContent='Camera overlay test: the car is a movable 3D overlay, not world-anchored tracking. Native world AR is available only on supported phones/browsers.';
+  }catch(err){
+   $('autoarCameraTitle').textContent='Camera could not start';
+   $('autoarCameraMessage').textContent=(err?.name==='NotAllowedError'?'Camera permission was denied. Allow camera access in browser settings and retry.':(err?.message||'Camera unavailable. Open the published HTTPS site and allow camera access.'));
+   video.poster='';
+   safeToast('Camera unavailable: '+(err?.name||err?.message||'permission required'));
+  }
+ }
+ function closeCamera(){const modal=$('autoarCameraModal'),video=$('autoarCameraVideo');modal?.classList.remove('open');document.body.style.overflow='';if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}if(video)video.srcObject=null}
+ window.AUTOAR_openCameraTest=openCameraTest;
+ $('autoarCameraClose')?.addEventListener('click',closeCamera);
+ $('autoarFlipCamera')?.addEventListener('click',()=>{facing=facing==='environment'?'user':'environment';const path=$('autoarCameraModel')?.getAttribute('src')||'./mclaren_spider.glb';openCameraTest(path)});
+ $('builderARTest')?.addEventListener('click',()=>openCameraTest(builderModel?.value||'./mclaren_spider.glb'));
+ $('customizerTryAR')?.addEventListener('contextmenu',e=>e.preventDefault());
+ // On a desktop browser, the main AR button should open a useful camera-overlay test instead of only saying unsupported.
+ const mainARButton=$('tryAR');
+ if(mainARButton)mainARButton.onclick=()=>{
+  const v=mainViewer;
+  if(!v?.loaded){safeToast('Wait for the 3D car to finish loading first.');return}
+  if(v.canActivateAR){try{v.activateAR();return}catch(e){console.warn('Native AR failed; opening camera overlay',e)}}
+  openCameraTest(v.getAttribute('src')||'./mclaren_spider.glb');
+ };
+ // Make hidden builder canvas redraw after it becomes visible and whenever its size changes.
+ const chassis=$('chassisCanvas');
+ if(chassis&&'ResizeObserver'in window){new ResizeObserver(()=>{if(chassis.clientWidth>0&&chassis.clientHeight>0){try{window.dispatchEvent(new Event('resize'));}catch(e){}}}).observe(chassis)}
+ document.querySelector('[data-page="builder"]')?.addEventListener('click',()=>requestAnimationFrame(()=>requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')))));
 })();
 </script>
 
